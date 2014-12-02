@@ -112,6 +112,10 @@ package org.flixel
 		 * Internal helper for fading in sounds.
 		 */
 		protected var _fadeInTotal:Number;
+		/**
+		 * Internal helper to track whether the pause was caused by an internal loss in focus
+		 */
+		public var _pausedOnFocusLost:Boolean;
 		
 		/**
 		 * The FlxSound constructor gets all the variables initialized, but NOT ready to play a sound yet.
@@ -473,6 +477,11 @@ package org.flixel
 			updateTransform();
 		}
 		
+		public function get position():Number 
+		{
+			return _position;
+		}
+		
 		/**
 		 * Returns the currently selected "real" volume of the sound (takes fades and proximity into account).
 		 * 
@@ -520,6 +529,7 @@ package org.flixel
 	        	_channel.removeEventListener(Event.SOUND_COMPLETE,looped);
 	        _channel = null;
 			active = false;
+			_pausedOnFocusLost = false;
 			if(autoDestroy)
 				destroy();
 		}

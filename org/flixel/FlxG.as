@@ -627,36 +627,71 @@ package org.flixel
 		/**
 		 * Pause all sounds currently playing.
 		 */
-		static public function pauseSounds():void
+		static public function pauseSounds(focusLost:Boolean=false):void
 		{
 			if((music != null) && music.exists && music.active)
+			{
+				if (focusLost) {
+					music._pausedOnFocusLost = focusLost;
+				}
 				music.pause();
+			}
 			var i:uint = 0;
 			var sound:FlxSound;
 			var l:uint = sounds.length;
 			while(i < l)
 			{
 				sound = sounds.members[i++] as FlxSound;
-				if((sound != null) && sound.exists && sound.active)
+				if ((sound != null) && sound.exists && sound.active)
+				{
+					if (focusLost) {
+						sound._pausedOnFocusLost = focusLost;
+					}
 					sound.pause();
+				}
 			}
 		}
 		
 		/**
 		 * Resume playing existing sounds.
 		 */
-		static public function resumeSounds():void
+		static public function resumeSounds(focusLost:Boolean=false):void
 		{
-			if((music != null) && music.exists)
-				music.play();
+			if ((music != null) && music.exists && music.position > 0) 
+			{
+				if (focusLost) {
+					if (music._pausedOnFocusLost)
+					{
+						music._pausedOnFocusLost = false;
+						music.play();
+					}
+				}
+				else
+				{
+					music.play();
+				}
+			}
 			var i:uint = 0;
 			var sound:FlxSound;
 			var l:uint = sounds.length;
 			while(i < l)
 			{
 				sound = sounds.members[i++] as FlxSound;
-				if((sound != null) && sound.exists)
-					sound.resume();
+				if ((sound != null) && sound.exists)
+				{
+					if (focusLost) 
+					{
+						if (sound._pausedOnFocusLost)
+						{
+							sound._pausedOnFocusLost = false;
+							sound.resume();
+						}
+					}
+					else
+					{
+						sound.resume();
+					}
+				}
 			}
 		}
 		
