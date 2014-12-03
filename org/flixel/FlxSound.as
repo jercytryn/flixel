@@ -373,6 +373,8 @@ package org.flixel
 		 */
 		public function resume():void
 		{
+			if (active)
+				return;
 			if(_position <= 0)
 				return;
 			if(_looped)
