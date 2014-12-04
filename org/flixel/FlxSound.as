@@ -113,6 +113,10 @@ package org.flixel
 		 */
 		protected var _fadeInTotal:Number;
 		/**
+		 * Keeps track of the offset to apply after the first play through
+		 */
+		protected var _positionOffset:Number;
+		/**
 		 * Internal helper to track whether the pause was caused by an internal loss in focus
 		 */
 		public var _pausedOnFocusLost:Boolean;
@@ -139,6 +143,7 @@ package org.flixel
 			_transform.pan = 0;
 			_sound = null;
 			_position = 0;
+			_positionOffset = 0;
 			_volume = 1.0;
 			_volumeAdjust = 1.0;
 			_looped = false;
@@ -251,16 +256,18 @@ package org.flixel
 		 * @param	EmbeddedSound	An embedded Class object representing an MP3 file.
 		 * @param	Looped			Whether or not this sound should loop endlessly.
 		 * @param	AutoDestroy		Whether or not this <code>FlxSound</code> instance should be destroyed when the sound finishes playing.  Default value is false, but FlxG.play() and FlxG.stream() will set it to true by default.
+		 * @param   LoopOffset      How much to offset after the first playthrough when looping
 		 * 
 		 * @return	This <code>FlxSound</code> instance (nice for chaining stuff together, if you're into that).
 		 */
-		public function loadEmbedded(EmbeddedSound:Class, Looped:Boolean=false, AutoDestroy:Boolean=false):FlxSound
+		public function loadEmbedded(EmbeddedSound:Class, Looped:Boolean=false, AutoDestroy:Boolean=false, LoopOffset:Number=0):FlxSound
 		{
 			stop();
 			createSound();
 			_sound = new EmbeddedSound();
 			//NOTE: can't pull ID3 info from embedded sound currently
 			_looped = Looped;
+			_positionOffset = LoopOffset;
 			updateTransform();
 			exists = true;
 			return this;
@@ -272,10 +279,11 @@ package org.flixel
 		 * @param	EmbeddedSound	A string representing the URL of the MP3 file you want to play.
 		 * @param	Looped			Whether or not this sound should loop endlessly.
 		 * @param	AutoDestroy		Whether or not this <code>FlxSound</code> instance should be destroyed when the sound finishes playing.  Default value is false, but FlxG.play() and FlxG.stream() will set it to true by default.
+		 * @param   LoopOffset      How much to offset after the first playthrough when looping
 		 * 
 		 * @return	This <code>FlxSound</code> instance (nice for chaining stuff together, if you're into that).
 		 */
-		public function loadStream(SoundURL:String, Looped:Boolean=false, AutoDestroy:Boolean=false):FlxSound
+		public function loadStream(SoundURL:String, Looped:Boolean=false, AutoDestroy:Boolean=false, LoopOffset:Number=0):FlxSound
 		{
 			stop();
 			createSound();
@@ -283,6 +291,7 @@ package org.flixel
 			_sound.addEventListener(Event.ID3, gotID3);
 			_sound.load(new URLRequest(SoundURL));
 			_looped = Looped;
+			_positionOffset = LoopOffset
 			updateTransform();
 			exists = true;
 			return this;
@@ -314,8 +323,9 @@ package org.flixel
 		 * Call this function to play the sound - also works on paused sounds.
 		 * 
 		 * @param	ForceRestart	Whether to start the sound over or not.  Default value is false, meaning if the sound is already playing or was paused when you call <code>play()</code>, it will continue playing from its current position, NOT start again from the beginning.
+		 * @param   Reloop          Whether the sound is relooping
 		 */
-		public function play(ForceRestart:Boolean=false):void
+		public function play(ForceRestart:Boolean=false, Reloop:Boolean=false):void
 		{
 			if(_position < 0)
 				return;
@@ -330,8 +340,17 @@ package org.flixel
 			{
 				if(_position == 0)
 				{
-					if(_channel == null)
-						_channel = _sound.play(0,9999,_transform);
+					if (_channel == null) {
+						if (_positionOffset > 0 && !Reloop) {
+							_channel = _sound.play(0, 0, _transform);
+							if (_channel != null) {
+								_channel.addEventListener(Event.SOUND_COMPLETE, looped);
+							}
+						}
+						else {
+							_channel = _sound.play(_positionOffset, 9999, _transform);
+						}
+					}
 					if(_channel == null)
 						exists = false;
 				}
@@ -515,7 +534,7 @@ package org.flixel
 		    	return;
 	        _channel.removeEventListener(Event.SOUND_COMPLETE,looped);
 	        _channel = null;
-			play();
+			play(false, true);
 		}
 
 		/**

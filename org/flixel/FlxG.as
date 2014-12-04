@@ -513,10 +513,11 @@ package org.flixel
 		 * @param	AutoDestroy		Whether to destroy this sound when it finishes playing.  Leave this value set to "false" if you want to re-use this <code>FlxSound</code> instance.
 		 * @param	AutoPlay		Whether to play the sound.
 		 * @param	URL				Load a sound from an external web resource instead.  Only used if EmbeddedSound = null.
+		 * @param   LoopOffset      How much to offset after the first playthrough when looping
 		 * 
 		 * @return	A <code>FlxSound</code> object.
 		 */
-		static public function loadSound(EmbeddedSound:Class=null,Volume:Number=1.0,Looped:Boolean=false,AutoDestroy:Boolean=false,AutoPlay:Boolean=false,URL:String=null):FlxSound
+		static public function loadSound(EmbeddedSound:Class=null,Volume:Number=1.0,Looped:Boolean=false,AutoDestroy:Boolean=false,AutoPlay:Boolean=false,URL:String=null,LoopOffset:Number=0):FlxSound
 		{
 			if((EmbeddedSound == null) && (URL == null))
 			{
@@ -525,9 +526,9 @@ package org.flixel
 			}
 			var sound:FlxSound = sounds.recycle(FlxSound) as FlxSound;
 			if(EmbeddedSound != null)
-				sound.loadEmbedded(EmbeddedSound,Looped,AutoDestroy);
+				sound.loadEmbedded(EmbeddedSound,Looped,AutoDestroy,LoopOffset);
 			else
-				sound.loadStream(URL,Looped,AutoDestroy);
+				sound.loadStream(URL,Looped,AutoDestroy,LoopOffset);
 			sound.volume = Volume;
 			if(AutoPlay)
 				sound.play();
@@ -558,12 +559,13 @@ package org.flixel
 		 * @param	Volume	How loud to play it (0 to 1).
 		 * @param	Looped	Whether or not to loop this sound.
 		 * @param	AutoDestroy		Whether to destroy this sound when it finishes playing.  Leave this value set to "false" if you want to re-use this <code>FlxSound</code> instance.
+		 * @param   LoopOffset      How much to offset after the first playthrough when looping
 		 * 
 		 * @return	A FlxSound object.
 		 */
-		static public function stream(URL:String,Volume:Number=1.0,Looped:Boolean=false,AutoDestroy:Boolean=true):FlxSound
+		static public function stream(URL:String,Volume:Number=1.0,Looped:Boolean=false,AutoDestroy:Boolean=true,LoopOffset:Number=0):FlxSound
 		{
-			return FlxG.loadSound(null,Volume,Looped,AutoDestroy,true,URL);
+			return FlxG.loadSound(null,Volume,Looped,AutoDestroy,true,URL,LoopOffset);
 		}
 		
 		/**
